@@ -8,7 +8,7 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 overflow-hidden">
-      {/* Decorative circle background */}
+      {/* Decorative background circle */}
       <div className="absolute -top-20 right-[-100px] w-[500px] h-[500px] bg-indigo-100 rounded-full blur-3xl opacity-40 z-0" />
 
       <motion.div
@@ -37,12 +37,13 @@ export default function ContactPage() {
           </motion.div>
         ) : (
           <motion.form
+            action="https://formspree.io/f/xblkpbog"
+            method="POST"
             className="space-y-5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={() => {
               setSubmitted(true);
             }}
           >
@@ -50,6 +51,7 @@ export default function ContactPage() {
               <label className="block text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
+                name="name"
                 required
                 className="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -59,6 +61,7 @@ export default function ContactPage() {
               <label className="block text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
+                name="email"
                 required
                 className="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -67,6 +70,7 @@ export default function ContactPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700">Message</label>
               <textarea
+                name="message"
                 required
                 rows={4}
                 className="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
