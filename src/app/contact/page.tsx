@@ -43,9 +43,6 @@ export default function ContactPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            onSubmit={() => {
-              setSubmitted(true);
-            }}
           >
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
