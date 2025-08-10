@@ -19,6 +19,8 @@ export default function ClientLayout({
         <Link href="/about">About</Link>
         <Link href="/projects">Projects</Link>
         <Link href="/contact">Contact</Link>
+        {/* <Link href="/translator">Translator</Link> */}
+
       </nav>
 
       {/* Animated Page Wrapper */}

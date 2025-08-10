@@ -12,10 +12,10 @@ type Project = {
 
 const projects: Project[] = [
   {
-    title: 'Personal Portfolio',
+    title: 'Translator',
     image: '/assets/braianpf.png',
     description: 'My own site built with Next.js, TypeScript, and Tailwind CSS.',
-    link: 'https://your-portfolio-link.com',
+    link: '/translator',
   },
   {
     title: 'PM for RW Las Vegas Website',
