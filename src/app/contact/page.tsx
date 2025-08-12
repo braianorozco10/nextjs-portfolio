@@ -70,7 +70,7 @@ export default function ContactPage() {
                 name="message"
                 required
                 rows={4}
-                className="w-ful text-gray-800 mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-gray-800 mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               ></textarea>
             </div>
 
