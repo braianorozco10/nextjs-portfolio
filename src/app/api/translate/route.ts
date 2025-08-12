@@ -20,57 +20,59 @@ const NAME_TO_CODE: Record<string, string> = {
 export async function POST(req: Request) {
   try {
     const { text, targets, source } = (await req.json()) as Body;
-    if (!text || !Array.isArray(targets) || !targets.length) {
+
+    if (!text || !Array.isArray(targets) || targets.length === 0) {
       return json({ error: "Missing text/targets" }, 400);
     }
 
     const q = text.trim();
-    // If source is given and not "Auto", map it; otherwise detect
-    const sourceCode =
+    const srcCode =
       source && source !== "Auto"
         ? NAME_TO_CODE[source] ?? (await detectSource(q))
         : await detectSource(q);
 
-    // Filter out targets that equal the source to avoid MyMemory error
+    // skip targets that are the same as the source (avoids MyMemory error)
     const validTargets = targets.filter((name) => {
       const code = NAME_TO_CODE[name];
-      return code && code !== sourceCode;
+      return Boolean(code && code !== srcCode);
     });
 
-    // If all requested targets equal the source, return empty results gracefully
     if (validTargets.length === 0) {
+      // nothing to translate; return empty strings for all requested targets
       return json({ results: Object.fromEntries(targets.map((n) => [n, ""])) });
     }
 
-    // Translate in parallel via MyMemory
     const entries = await Promise.all(
       validTargets.map(async (name) => {
         const target = NAME_TO_CODE[name]!;
         const params = new URLSearchParams({
           q,
-          langpair: `${sourceCode}|${target}`,
+          langpair: `${srcCode}|${target}`,
         });
         if (process.env.MYMEMORY_EMAIL) params.set("de", process.env.MYMEMORY_EMAIL);
 
         const url = `https://api.mymemory.translated.net/get?${params.toString()}`;
         const r = await fetch(url, { headers: { Accept: "application/json" } });
-        if (!r.ok) throw new Error(`MyMemory ${r.status}: ${await r.text().catch(()=>"<no body>")}`);
-        const data = await r.json();
-        const translated = data?.responseData?.translatedText ?? "";
+        if (!r.ok) {
+          const body = await r.text().catch(() => "<no body>");
+          throw new Error(`MyMemory ${r.status}: ${body}`);
+        }
+        const data = (await r.json()) as unknown;
+        const translated = readTranslatedText(data);
         return [name, translated] as const;
       })
     );
 
-    // Include empty strings for skipped (source==target) so UI stays aligned
+    // include empty strings for skipped (source==target) to keep UI aligned
     const results: Record<string, string> = Object.fromEntries(entries);
     targets.forEach((name) => {
-      if (!(name in results)) results[name] = ""; // skipped ones
+      if (!(name in results)) results[name] = "";
     });
 
-    return json({ results, meta: { detectedSource: sourceCode } });
-  } catch (e: any) {
-    console.error("API /translate error:", e);
-    return json({ error: e?.message ?? "Server error" }, 500);
+    return json({ results, meta: { detectedSource: srcCode } });
+  } catch (e: unknown) {
+    console.error("API /translate error:", errorMessage(e));
+    return json({ error: errorMessage(e) }, 500);
   }
 }
 
@@ -79,17 +81,26 @@ async function detectSource(text: string): Promise<string> {
   try {
     const r = await fetch(url, { headers: { Accept: "application/json" } });
     if (!r.ok) throw new Error(`Detect ${r.status}`);
-    const data = await r.json();
-    const detected =
-      data?.data?.language ||
-      data?.responseData?.language ||
-      data?.language ||
-      data?.matches?.[0]?.language;
-    if (typeof detected === "string" && detected.length >= 2) return detected.toLowerCase();
-    return "en"; // fallback
+    const data = (await r.json()) as unknown;
+
+    const lang =
+      // various shapes MyMemory has been seen to return
+      (data as { data?: { language?: string } }).data?.language ??
+      (data as { responseData?: { language?: string } }).responseData?.language ??
+      (data as { language?: string }).language ??
+      (data as { matches?: Array<{ language?: string }> }).matches?.[0]?.language;
+
+    return typeof lang === "string" && lang.length >= 2 ? lang.toLowerCase() : "en";
   } catch {
     return "en";
   }
+}
+
+function readTranslatedText(data: unknown): string {
+  const txt =
+    (data as { responseData?: { translatedText?: string } }).responseData?.translatedText ??
+    "";
+  return typeof txt === "string" ? txt : "";
 }
 
 function json(data: unknown, status = 200) {
@@ -97,4 +108,13 @@ function json(data: unknown, status = 200) {
     status,
     headers: { "content-type": "application/json" },
   });
+}
+
+function errorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
 }
