@@ -1,28 +1,38 @@
-export type Role = "admin" | "users";
-export function validateUser(u: string, p: string): Role | null {
-  const d: any = {
-    admin: { p: "1234", r: "admin" },
-    users: { p: "1234", r: "user" },
-  };
-  const e = d[u];
-  if (e && e.p === p) return e.r;
+// src/lib/auth.ts
+export type Role = 'admin' | 'users';
+
+type Credentials = { pass: string; role: Role };
+const PAIRS: Record<string, Credentials> = {
+  admin: { pass: '1234', role: 'admin' },
+  users: { pass: '1234', role: 'users' }, // <- ensure "users"
+};
+
+export function validateUser(username: string, password: string): Role | null {
+  const entry = PAIRS[username];
+  if (entry && entry.pass === password) return entry.role;
   return null;
 }
-export function saveSession(r: Role, u: string) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("wt_session", JSON.stringify({ r, u, ts: Date.now() }));
+
+export type Session = { role: Role; username: string; ts: number };
+
+export function saveSession(role: Role, username: string) {
+  if (typeof window === 'undefined') return;
+  const data: Session = { role, username, ts: Date.now() };
+  localStorage.setItem('wt_session', JSON.stringify(data));
 }
-export function getSession() {
-  if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem("wt_session");
+
+export function getSession(): Session | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem('wt_session');
   if (!raw) return null;
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw) as Session;
   } catch {
     return null;
   }
 }
+
 export function clearSession() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("wt_session");
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('wt_session');
 }
