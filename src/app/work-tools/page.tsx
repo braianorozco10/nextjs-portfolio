@@ -1,9 +1,12 @@
 'use client';
-
+import {useEffect,useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {getSession,clearSession} from '@/lib/auth';
+import ToolCard from '@/components/ToolCard';
 import * as React from 'react';
 import { motion } from 'framer-motion';
 
-type Project = {
+type Tool = {
   title: string;
   description: string;
   link?: string;
@@ -11,33 +14,27 @@ type Project = {
   newTab?: boolean;
 };
 
-const projects: Project[] = [
+const projects: Tool[] = [
   {
-    title: 'Translator',
+    title: 'Time converter for SInO',
     image: '/assets/trnl.png',
-    description: 'My own site built with Next.js, TypeScript, and Tailwind CSS.',
-    link: '/translator',
+    description: 'convert your employees time into monthly hour count for Urvenue time sheet.',
+    link: '/work-tools/time-converter',
     newTab: false,
-  },
-  {
-    title: 'PM for RW Las Vegas Website',
-    image: '/assets/rwlv.png',
-    description: 'A booking tool made for resort and hotel clients.',
-    link: 'https://rwlasvegas.com',
-    newTab: true, 
-  },
-  {
-    title: 'PM for EEG Website',
-    image: '/assets/eeg.png',
-    description: 'An internal tool for scheduling and tracking campaigns.',
-    link: 'https://eveningentertainmentgroup.com/',
-    newTab: true, 
   },
 ];
 
-export default function ProjectsPage(): React.JSX.Element {
-  return (
-    <main className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-10">
+
+
+
+
+
+export default function WorkTools()
+{const[u,setU]=useState<any>(null);
+    const r=useRouter();useEffect(()=>{const s=getSession();
+        if(!s){r.replace('/login');return;}setU(s.u);},[r]);
+        if(!u)return null;return(
+         <main className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-10">
       <div className="max-w-7xl w-full">
         <motion.h1
           className="text-4xl font-bold text-[#1f2937] mb-10 text-center"
@@ -45,7 +42,7 @@ export default function ProjectsPage(): React.JSX.Element {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
-          Projects
+          Tools
         </motion.h1>
 
         <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -82,7 +79,7 @@ export default function ProjectsPage(): React.JSX.Element {
                       {...linkProps}
                       className="inline-block mt-4 text-indigo-600 hover:underline font-medium"
                     >
-                      View Project →
+                      View Tool →
                     </a>
                   )}
                 </div>
@@ -92,5 +89,7 @@ export default function ProjectsPage(): React.JSX.Element {
         </div>
       </div>
     </main>
-  );
+        );
 }
+
+
