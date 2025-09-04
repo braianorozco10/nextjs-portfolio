@@ -33,6 +33,13 @@ const projects: Project[] = [
     link: 'https://eveningentertainmentgroup.com/',
     newTab: true, 
   },
+  {
+    title: 'Work Tools',
+    image: '/assets/tls.png',
+    description: 'Tools for urvenue dayly tasks',
+    link: '/work-tools',
+    newTab: true, 
+  },
 ];
 
 export default function ProjectsPage(): React.JSX.Element {
